@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 import logging
+import asyncio
 
 # Load environment variables
 load_dotenv()
@@ -20,7 +21,8 @@ bot = commands.Bot(command_prefix="!", intents=intents, application_id=APPLICATI
 async def on_ready():
     logging.info(f"✅ Bot logged in as {bot.user}")
     try:
-        await bot.tree.sync()
+        synced = await bot.tree.sync()
+        logging.info(f"✅ Synced {len(synced)} slash commands.")
     except Exception as e:
         logging.warning(f"⚠️ Slash command sync failed: {e}")
 
@@ -28,13 +30,16 @@ async def load_cogs():
     for filename in os.listdir("./cogs"):
         if filename.endswith(".py") and not filename.startswith("__"):
             try:
-                print(f"Trying to load: cogs.{filename[:-3]}")
                 await bot.load_extension(f"cogs.{filename[:-3]}")
                 logging.info(f"✅ Loaded cog: cogs.{filename[:-3]}")
             except Exception as e:
                 logging.error(f"❌ Failed to load cog cogs.{filename[:-3]}: {e}")
 
+async def main():
+    async with bot:
+        await load_cogs()
+        await bot.start(TOKEN)
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    bot.loop.create_task(load_cogs())
-    bot.run(TOKEN)
+    asyncio.run(main())
