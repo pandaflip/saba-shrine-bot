@@ -1,56 +1,39 @@
-# index.py
+import os
 import discord
 from discord.ext import commands
-import os
-import asyncio
-import mysql.connector
 from dotenv import load_dotenv
+import logging
 
+# Load environment variables
 load_dotenv()
+TOKEN = os.getenv("DISCORD_TOKEN")
+APPLICATION_ID = int(os.getenv("APPLICATION_ID"))
 
 intents = discord.Intents.default()
 intents.messages = True
-intents.message_content = True  # Important pour détecter les prières
+intents.guilds = True
+intents.message_content = True
 
-class ShrineBot(commands.Bot):
-    def __init__(self):
-        super().__init__(command_prefix="!", intents=intents)
-        self.db = None
-
-    async def setup_hook(self):
-        # Connexion à la base de données
-        self.db = mysql.connector.connect(
-            host=os.getenv("MYSQL_HOST", "localhost"),
-            user=os.getenv("MYSQL_USER"),
-            password=os.getenv("MYSQL_PASSWORD"),
-            database=os.getenv("MYSQL_DATABASE"),
-            port=int(os.getenv("MYSQL_PORT", 3306)),
-            autocommit=True
-        )
-
-        # Chargement des cogs
-        for cog in ["admin", "blessings", "pray", "shop", "shrine_setup"]:
-            await self.load_extension(f"cogs.{cog}")
-
-        # Synchroniser les commandes (slash)
-        await self.tree.sync()
-        print("[✅] Commandes slash synchronisées")
-
-    async def close(self):
-        if self.db:
-            self.db.close()
-        await super().close()
-
-bot = ShrineBot()
+bot = commands.Bot(command_prefix="!", intents=intents, application_id=APPLICATION_ID)
 
 @bot.event
 async def on_ready():
-    print(f"[🚀] Connecté en tant que {bot.user} (ID: {bot.user.id})")
+    logging.info(f"✅ Bot logged in as {bot.user}")
+    try:
+        await bot.tree.sync()
+    except Exception as e:
+        logging.warning(f"⚠️ Slash command sync failed: {e}")
 
-# Lancement du bot
+async def load_cogs():
+    for filename in os.listdir("./cogs"):
+        if filename.endswith(".py") and not filename.startswith("__"):
+            try:
+                await bot.load_extension(f"cogs.{filename[:-3]}")
+                logging.info(f"✅ Loaded cog: cogs.{filename[:-3]}")
+            except Exception as e:
+                logging.error(f"❌ Failed to load cog cogs.{filename[:-3]}: {e}")
+
 if __name__ == "__main__":
-    token = os.getenv("DISCORD_TOKEN")
-    if not token:
-        print("❌ DISCORD_TOKEN manquant dans le fichier .env")
-    else:
-        asyncio.run(bot.start(token))
+    logging.basicConfig(level=logging.INFO)
+    bot.loop.create_task(load_cogs())
+    bot.run(TOKEN)

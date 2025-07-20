@@ -1,0 +1,11 @@
+[
+    { "name": "Fishling :saba: ", "min": 0 },
+    { "name": "Crabling :crabby:", "min": 50 },
+    { "name": "Shrine regular :sabaDeal3:", "min": 150 },
+    { "name": "Saba Believer :sabapray:", "min": 300 },
+    { "name": "Disciple of the Shrine :sabastars:", "min": 500 },
+    { "name": "Tier 6 Seeker :tier4:", "min": 800 },
+    { "name": "Golden Pepah :tier6:", "min": 1200 },
+    { "name": "Divine Crustacean :kani_Aware:", "min": 1800 },
+    { "name": "Echo of Sameko :Sabaswim1::Sabaswim2:", "min": 2500 }
+]
