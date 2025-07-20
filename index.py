@@ -28,6 +28,7 @@ async def load_cogs():
     for filename in os.listdir("./cogs"):
         if filename.endswith(".py") and not filename.startswith("__"):
             try:
+                print(f"Trying to load: cogs.{filename[:-3]}")
                 await bot.load_extension(f"cogs.{filename[:-3]}")
                 logging.info(f"✅ Loaded cog: cogs.{filename[:-3]}")
             except Exception as e:
